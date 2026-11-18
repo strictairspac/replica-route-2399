@@ -2,15 +2,19 @@ from typing import Literal
 from pydantic import BaseModel,Field,model_validator
 class Event(BaseModel):
     at_ms:int=Field(ge=0,le=86400000)
-    kind:Literal['write','read','replicate','node_down','node_up']
+    kind:Literal['write','read','replicate','node_down','node_up','diverge','backfill','inspect','repair_done']
     session:str=Field(default='default',min_length=1,max_length=60)
     node:str|None=Field(default=None,max_length=80)
     position:int|None=Field(default=None,ge=0,le=1000000000)
     delay_ms:int|None=Field(default=None,ge=0,le=3600000)
+    from_position:int|None=Field(default=None,ge=1,le=1000000000)
+    to_position:int|None=Field(default=None,ge=1,le=1000000000)
     @model_validator(mode='after')
     def valid_event(self):
-        if self.kind in ('replicate','node_down','node_up') and not self.node:raise ValueError('节点事件需要node')
+        if self.kind in ('replicate','node_down','node_up','diverge','backfill','inspect','repair_done') and not self.node:raise ValueError('节点事件需要node')
         if self.kind=='replicate' and (self.position is None or self.delay_ms is None):raise ValueError('replicate需要position和delay_ms')
+        if self.kind=='backfill' and (self.from_position is None or self.to_position is None):raise ValueError('backfill需要from_position和to_position')
+        if self.kind=='backfill' and self.from_position>self.to_position:raise ValueError('补传起始位点不能大于结束位点')
         return self
 class RequestSetInput(BaseModel):
     code:str=Field(min_length=2,max_length=80)

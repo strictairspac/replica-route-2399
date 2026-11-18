@@ -14,7 +14,7 @@ class RequestSet(Base):
 class Trial(Base):
     __tablename__='trials'
     id=Column(Integer,primary_key=True);name=Column(String(120),nullable=False);request_set_id=Column(Integer,ForeignKey('request_sets.id'),nullable=False)
-    max_delay_ms=Column(Integer,nullable=False);sticky_ms=Column(Integer,nullable=False);status=Column(String(20),nullable=False,default='queued');input_snapshot=Column(JSON,nullable=False);result=Column(JSON,nullable=True);error=Column(Text,nullable=True)
+    max_delay_ms=Column(Integer,nullable=False);sticky_ms=Column(Integer,nullable=False);repair_mode=Column(String(20),nullable=False,default='verified');baseline_trial_id=Column(Integer,ForeignKey('trials.id'),nullable=True);status=Column(String(20),nullable=False,default='queued');input_snapshot=Column(JSON,nullable=False);result=Column(JSON,nullable=True);error=Column(Text,nullable=True)
     created_at=Column(DateTime(timezone=True),default=lambda:datetime.now(timezone.utc))
 class Audit(Base):
     __tablename__='audit_logs'

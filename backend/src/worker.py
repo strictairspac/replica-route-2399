@@ -11,8 +11,9 @@ while True:
     ident=int(item[1])
     try:
         with Session() as db:
-            obj=db.get(Trial,ident);obj.status='running';db.commit();snapshot=obj.input_snapshot;delay=obj.max_delay_ms;sticky=obj.sticky_ms
-        result=simulate(snapshot['nodes'],snapshot['request_set']['events'],delay,sticky)
+            obj=db.get(Trial,ident);obj.status='running';db.commit();snapshot=obj.input_snapshot;delay=obj.max_delay_ms;sticky=obj.sticky_ms;repair=obj.repair_mode or 'verified'
+        nodes=snapshot.get('seeded_nodes') or snapshot['nodes']
+        result=simulate(nodes,snapshot['request_set']['events'],delay,sticky,repair)
         with Session() as db:
             obj=db.get(Trial,ident);obj.result=result;obj.status='completed';db.commit()
         Path(f'/artifacts/route-{ident}.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
